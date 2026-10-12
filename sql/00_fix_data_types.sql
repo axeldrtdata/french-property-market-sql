@@ -1,11 +1,9 @@
--- 00 · Fix data types before any analysis
--- Three issues found when auditing the loaded data:
---   1. dates are stored as text with slashes (2020/01/02), so ISO filters such as
---      BETWEEN '2020-01-01' AND '2020-06-30' silently return nothing;
---   2. most Carrez surfaces are stored as text with a decimal comma ('48,22'),
---      which SQLite truncates to 48 in calculations;
---   3. 237 sale amounts are text with a decimal comma, which also breaks sorting
---      (text values sort above numbers in SQLite).
+-- 00 · Data types for SQLite, run once before the queries
+-- The source files store some values in French formats that SQLite cannot use as is:
+--   1. dates written with slashes (2020/01/02) are converted to ISO format (2020-01-02),
+--      so that filters such as BETWEEN '2020-01-01' AND '2020-06-30' work;
+--   2. Carrez surfaces written with a decimal comma ('48,22') are converted to numbers;
+--   3. sale amounts written with a decimal comma are converted to numbers too.
 
 UPDATE ventes
 SET date = replace(date, '/', '-');
