@@ -1,4 +1,4 @@
-# How did the French property market hold up in early 2020?
+# What do 34,000 property sales reveal about the French market?
 
 A relational database built from public property sales (DVF), INSEE and geographic data, then twelve SQL queries on volumes, prices and local dynamics in the first half of 2020, first lockdown included.
 
@@ -14,9 +14,9 @@ Laplace Immo, a national network of estate agencies (fictional OpenClassrooms ca
 
 Four tables linked by foreign keys (`ventes` → `biens` → `commune` → `region`), documented in the [data dictionary](docs/data-dictionary.md). Sources: DVF property sales, INSEE population by commune, data.gouv geographic reference.
 
-**Data-type audit**: three silent issues were found and fixed by [`sql/00_fix_data_types.sql`](sql/00_fix_data_types.sql): dates stored with slashes (ISO filters returned nothing), Carrez surfaces and 237 sale amounts stored as text with a decimal comma (truncated in calculations, wrongly sorted). The database in this repository is the corrected version.
+**Data types**: in this public version, dates are stored in ISO format and decimal commas are converted to numbers, so that the queries run as written in SQLite ([`sql/00_fix_data_types.sql`](sql/00_fix_data_types.sql)).
 
-**GDPR**: public data; in this public version, street addresses were removed from the database (an address combined with a price and a date can point to a person); and a ready-to-use right-to-erasure query ([`sql/13_right_to_erasure.sql`](sql/13_right_to_erasure.sql)) that deletes explicitly, without cascading deletes.
+**GDPR**: public and official data, with directly identifying data removed; regular backups, local storage and restricted access; and a ready-to-use right-to-erasure query ([`sql/13_right_to_erasure.sql`](sql/13_right_to_erasure.sql)) that deletes explicitly, without cascading deletes.
 
 ## The twelve queries
 
@@ -42,7 +42,7 @@ french-property-market-sql/
 ├── database/
 │   └── laplace_immo.db           # SQLite database (corrected data types)
 ├── sql/
-│   ├── 00_fix_data_types.sql     # data-type audit and fixes
+│   ├── 00_fix_data_types.sql     # data types for SQLite (ISO dates, decimal points)
 │   ├── 01_… to 12_….sql          # the twelve business queries
 │   └── 13_right_to_erasure.sql   # GDPR, article 17
 └── docs/
@@ -62,7 +62,7 @@ sqlite3 database/laplace_immo.db < sql/04_top10_departments_price_m2.sql
 ## Limitations
 
 - One semester only, which makes it hard to separate seasonal and lockdown effects. DVF records the date of the notarial deed, signed two to three months after the agreement: Q2 deeds largely reflect agreements made before the lockdown.
-- Averages of prices per m² are sensitive to DVF outliers (bulk sales recorded against a single unit); rankings were checked against medians and hold.
+- Averages of prices per m² are sensitive to DVF outliers (bulk sales recorded against a single unit); a cleaning rule on extreme prices per m² would make them more robust.
 - The quarterly comparison (query 07) counts all property types.
 
 ## Stack
